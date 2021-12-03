@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-prometheus-adapter
+  namespace: n9e
+  labels:
+    component: k8s-prometheus-adapter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: k8s-prometheus-adapter
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  minReadySeconds: 20
+  template:
+    metadata:
+      labels:
+        component: k8s-prometheus-adapter
+    spec:
+      containers:
+        - name: k8s-prometheus-adapter
+          image: adapter:v1.9
+          env:
+            - name: MYSQL_USER
+              value: prometheus_adapter
+            - name: MYSQL_PASS
+              value: 数据库密码
+            - name: MYSQL_ADDR
+              value: 10.10.4.15
+            - name: MYSQL_DB
+              value: prometheus_adapter
+            - name: READ_API
+              value: http://10.0.0.1:9090 # 源prometheus
+            - name: WRITE_API
+              value: http://10.0.0.2:9090 # 目的prometheus
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: mudutxyunregsecret
